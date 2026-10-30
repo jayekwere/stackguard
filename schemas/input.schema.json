@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "type": "string",
+      "const": "1.2"
+    },
+    "terraform_version": {
+      "type": "string"
+    },
+    "resource_changes": {
+      "default": [],
+      "maxItems": 10000,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "managed",
+              "data"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "change": {
+            "type": "object",
+            "properties": {
+              "actions": {
+                "minItems": 1,
+                "maxItems": 2,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "no-op",
+                    "create",
+                    "read",
+                    "update",
+                    "delete",
+                    "forget"
+                  ]
+                }
+              },
+              "before": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "after": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "after_unknown": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "actions",
+              "before",
+              "after"
+            ],
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "address",
+          "mode",
+          "type",
+          "change"
+        ],
+        "additionalProperties": {}
+      }
+    },
+    "errored": {
+      "type": "boolean"
+    },
+    "complete": {
+      "type": "boolean"
+    },
+    "deferred_changes": {
+      "type": "array",
+      "items": {}
+    }
+  },
+  "required": [
+    "format_version",
+    "terraform_version",
+    "resource_changes"
+  ],
+  "additionalProperties": {}
+}
