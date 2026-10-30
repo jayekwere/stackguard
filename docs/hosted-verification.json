@@ -1,11 +1,11 @@
 {
-  "verified_commit": "d1a4c48d34fad32e9396b0328caa64a0f551c067",
-  "run_url": "https://github.com/jayekwere/stackguard/actions/runs/41094583440",
-  "run_id": 41094583440,
+  "verified_commit": "431e9c51fd588d35a0fdf6ec262094b640c9b412",
+  "run_url": "https://github.com/jayekwere/stackguard/actions/runs/41096628951",
+  "run_id": 41096628951,
   "conclusion": "success",
   "jobs": [
     {
-      "id": 124196917617,
+      "id": 124203951486,
       "name": "verify",
       "conclusion": "success",
       "steps": [
@@ -78,12 +78,12 @@
   ],
   "artifacts": [
     {
-      "id": 12995301947,
+      "id": 12995568409,
       "name": "verification-evidence",
-      "digest": "sha256:48fe76ec2deb3fddf27c773ba661ceb21dd72352b7a8aefd8c259566d275c891",
-      "size_in_bytes": 131336,
-      "expires_at": "2026-11-13T16:58:40Z"
+      "digest": "sha256:ce70ffe36af5e534a4f77fffc35e8386431346ad5c0ef3cc02a73a30f3507dc7",
+      "size_in_bytes": 118079,
+      "expires_at": "2026-11-13T17:12:20Z"
     }
   ],
-  "scope": "Exact verified snapshot. Later main commits have separately observable workflow runs. Cloud account integration limits remain as documented."
+  "scope": "Exact verified commit. A later documentation-only record commit can have a separate green run. Cloud account integration limits remain as documented."
 }
