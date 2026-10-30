@@ -11,7 +11,7 @@ A TypeScript CLI and local workbench that parse Terraform plan JSON, normalize p
 
 ## Run locally
 
-Requires Node 24.13+ or Node 26, and a trusted workstation. The initial setup downloads locked dependencies and OPA. Afterwards the core synthetic CLI and UI demos work offline. No cloud account or paid service is required.
+Requires Node 24.13+ or Node 26, and a trusted workstation. The initial setup downloads locked dependencies and OPA. Afterwards the core synthetic CLI and UI demos work offline. No cloud account or paid service is required. The pinned OPA installer supports Linux amd64/arm64 and macOS arm64.
 
 ```sh
 git clone https://github.com/jayekwere/stackguard.git
