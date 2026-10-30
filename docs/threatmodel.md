@@ -2,56 +2,63 @@
 
 ## Overview
 
-Intended use: the runnable repository implementation and its documented local demo. The user requested an open-source implementation with honest security scope. This model describes inspected source, not a security certification or a claim of complete audit coverage.
+StackGuard evaluates Terraform plan JSON through TypeScript normalization and a fixed OPA/Rego query. It exposes a CLI, an offline demo and a stateless local HTTP evaluator. A separate build step produces one self-contained Spacelift plan policy. The program does not apply infrastructure or publish its own GitHub App results. One independent fresh-context read-only architecture review informed this model; source-backed architecture and separately recorded runtime evidence are distinguished from security-audit coverage.
 
-Data flow: Terraform JSON --> Zod normalization --> private policy snapshot --> OPA --> evidence report --> CLI exit gate.
-
-| Component/source | Responsibility |
+| Component | Source and role |
 | --- | --- |
-| `src/main.ts:5` | CLI check/demo/serve, exit 0/1/2 |
-| `src/engine.ts:51` | Terraform evidence normalization and action/value validation |
-| `src/engine.ts:126` | Bounded OPA invocation using exact policy bytes |
-| `policy/spacelift.rego:4` | Separate fail-closed Spacelift envelope adapter |
-| `src/io.ts:21` | Loopback HTTP workbench and fixed static asset mapping |
+| CLI and HTTP startup | `src/main.ts:5` |
+| Plan normalization | `src/engine.ts:51` |
+| OPA execution and evidence | `src/engine.ts:126` |
+| Core security rules | `policy/stackguard.rego:4` |
+| Spacelift source adapter and deployable bundle | `policy/spacelift.rego:4`, `scripts/build-spacelift.ts:3`, `integrations/spacelift/policy.rego:147` |
+| Verified OPA installer | `scripts/install-opa.mjs:4` |
 
-| Deployment or workflow | Resource/configuration and effective location | Readers, writers or recipients | Enforcing control or unknown |
-| --- | --- | --- | --- |
-| CLI/web policy process | OPA override or .tools/opa; fixed policy/stackguard.rego copied into a private OS temporary directory | Trusted operator and OPA; normalized plan travels on stdin | No shell, 10-second timeout, 2 MiB output bound; policy snapshot removed after use |
-| Web listener | HOST or 127.0.0.1; PORT or 8080 | Reachable clients, no accounts | Host allowlist, same-origin POST, JSON content type and 1 MiB streaming limit |
-| Spacelift gate | Both policy packages attached by an operator; input.terraform envelope | External policy runner | Local adapter tests exist; real stack attachment remains unverified |
+| Deployment or workflow | Resource or capability | Configuration and precedence | Safe effective value or location | Readers, writers, or recipients | Enforcing control | Evidence or unknowns |
+| --- | --- | --- | --- | --- | --- | --- |
+| CLI check/demo | Plan JSON | Check argument or samples/unsafe-plan.json | Selected local JSON file or cwd/samples/unsafe-plan.json | Evaluator and OPA through normalized stdin | 1 MiB CLI input check, strict normalizer | `src/main.ts:11`, `src/main.ts:14`, `src/engine.ts:51` |
+| Host evaluator | OPA executable | OPA environment override or resolved .tools/opa | Trusted override or cwd/.tools/opa | Evaluator host | No shell, fixed arguments/query, 10-second timeout, 2 MiB output bound, PATH-only child environment | `src/engine.ts:126`, `src/engine.ts:135`; override authenticity is operator-owned |
+| Host evaluator | Evaluated policy snapshot | Read cwd/policy/stackguard.rego, private temporary directory, policy.rego | OS tmpdir/stackguard-policy-random/policy.rego | OPA and trusted host | 0600 file, private directory, finally cleanup; exact read bytes also hashed | `src/engine.ts:128`, `src/engine.ts:129`, `src/engine.ts:143` |
+| Compose evaluation | Executable and temporary policy | WORKDIR /app, copied binary/policy, /tmp tmpfs | /app/.tools/opa, /app/policy/stackguard.rego, /tmp/stackguard-policy-random/policy.rego | UID 10001 Node/OPA processes | Read-only root, dropped capabilities, no-new-privileges; 64 MiB noexec/nosuid /tmp | `Dockerfile:10`, `Dockerfile:17`, `Dockerfile:18`, `compose.yaml:8`; binary executes outside /tmp |
+| Setup/build | OPA distribution | Supported platform/architecture, pinned v1.22.0 URL and SHA-256 | .tools/opa mode 0755 for supported macOS arm64 or Linux architectures | Trusted setup host | Unsupported-platform rejection and hardcoded download digest | `scripts/install-opa.mjs:4`, `scripts/install-opa.mjs:9`, `scripts/install-opa.mjs:16` |
+| CLI check | Review export | Optional output argument | Operator-selected Markdown file and JSON stdout | Operator or separately configured publisher | Findings, digests, markup/mention neutralization | `src/main.ts:17`, `src/engine.ts:170`; no GitHub write occurs |
+| Host HTTP | Stateless evaluator | HOST/PORT or defaults | 127.0.0.1:8080; no persisted plan store | Reachable clients | Host/Origin checks, JSON content type, 1 MiB body bound, fixed static assets, CSP/no-store | `src/io.ts:10`, `src/io.ts:34`, `src/io.ts:46` |
+| Compose HTTP | Evaluator listener | Container HOST=0.0.0.0 and loopback publication | Container 0.0.0.0:8080; host 127.0.0.1:8080 | Container peers and loopback clients | Compose publication plus application controls and resource limits | `Dockerfile:9`, `compose.yaml:4`; direct Docker exposure is operator-configured |
+| Spacelift | Conditional external plan gate | Core plus source adapter transformed into a single package spacelift bundle | integrations/spacelift/policy.rego, attached as one plan policy | Spacelift runner and stack operators | Envelope/change/completeness/duplicate validation and bundled core rules | `scripts/build-spacelift.ts:3`, `integrations/spacelift/policy.rego:147`, `integrations/spacelift/policy.rego:176` |
+| Verification CI | Evidence export | Policy/bundle checks, demo/browser/container tests, artifact upload | verification-evidence with 14-day retention | GitHub artifact readers | contents:read, checkout credentials disabled, synthetic inputs | `.github/workflows/verify.yml:7`, `.github/workflows/verify.yml:17`, `.github/workflows/verify.yml:28`; real plans must remain private |
 
 ## Threat Model, Trust Boundaries, and Assumptions
 
-Protected assets: Plan decision integrity, resource-address evidence, policy bytes and plan/policy identity. Real plan data is confidential even when marked sensitive by Terraform.
+Protected assets are confidential plan contents, policy integrity, the exact evaluated decision and its evidence, executable authority and the separately configured deployment gate. A plan author controls resource addresses, attributes and supported metadata. A reachable HTTP client can request unauthenticated evaluation. Neither can select the executable or policy through the HTTP contract. Policy administrators, host operators, environment owners and trusted maintainers already control their respective code and execution authority and are outside isolation (`SECURITY.md:6`, `src/engine.ts:126`).
 
-Untrusted JSON passes known-field and semantic validation before a fixed OPA query. Imported Terraform metadata is retained but does not select executables or policy paths. The environment-controlled executable and repository policy are trusted operator configuration. A client cannot choose them through HTTP. The Spacelift adapter has its own input rejection rules and invokes the same policy package.
+Normalization validates plan format, completeness, actions, duplicate addresses and security-relevant attributes before OPA receives normalized stdin. The subprocess uses a fixed policy snapshot and query without a shell. OPA output crosses a strict finding/result schema; undefined output fails. CLI check returns 1 for deny and 2 for invalid input or evaluation error. JSON and Markdown output preserve resource addresses, planned actions, rule IDs and exact field pointers while neutralizing review markup (`src/engine.ts:51`, `src/engine.ts:126`, `src/engine.ts:146`, `src/engine.ts:170`, `src/main.ts:18`).
 
-Host administrators, private configuration owners and trusted repository maintainers can alter code, files and private state. They are trusted. An ordinary input author does not gain those capabilities by supplying JSON. Public demo credentials represent synthetic roles in one trusted local demonstration. The local stateless TypeScript evaluators do not establish authenticated service tenancy; the Python services derive tenancy from trusted identities. External assertions retain their stated trust prerequisites.
+Policy scope is deliberately narrow: active managed AWS security groups, S3 public-access blocks, S3 ACLs, protected deletion/forget tags and unsupported-type rejection. Data/no-op/read changes are outside active enforcement; terraform_data is supported. Unknown security attributes deny, but harmless computed descriptions do not become security findings. Aggregates of narrower CIDRs, runtime drift and full provider semantics are outside the implemented rules (`policy/stackguard.rego:4`, `policy/stackguard.rego:46`, `policy/stackguard.rego:77`).
 
-No apply pipeline, branch protection, live AWS account, or real Spacelift stack has been verified. Policy scope is deliberately narrow. Combined narrower public CIDRs, runtime drift and full provider semantics are outside the current rule set.
+Spacelift isolates policy modules. The authoritative hosted deployment artifact is the single generated bundle, not two separately attached source packages. Its input.terraform envelope is independently validated before mapping into bundled core rules (`scripts/build-spacelift.ts:3`, `integrations/spacelift/policy.rego:147`, `integrations/spacelift/policy.rego:165`, `integrations/spacelift/policy.rego:181`).
+
+Runtime verification context, recorded separately in `docs/spacelift-verification.json:1`: a dedicated hosted stack using OpenTofu 1.13.2 in the Terraform vendor and AWS provider 6.20.0 denied the public-ingress fixture with SG001. The private-CIDR comparison passed plan checks, reached UNCONFIRMED and was discarded without applying. Dummy provider credentials and no cloud integration were used. This proves those hosted plan-policy decisions at the recorded commit; it does not verify a real AWS deployment, branch protection, all Spacelift workflows or future stack configuration.
+
+Reports hash JSON.stringify of parsed input and the exact policy bytes used. The JSON digest is not the binary .tfplan digest. An apply pipeline must separately bind approved JSON to the exact binary plan and enforce the gate before apply. No such apply pipeline or branch protection is installed by this repository. The report's pinned_distribution string does not authenticate an arbitrary OPA override (`src/engine.ts:158`, `src/engine.ts:164`, `README.md:64`).
+
+Private paths, key/environment files and snapshots are excluded from build context, but arbitrary sensitive plan filenames still need operator-controlled placement (`.dockerignore:11`). Direct evaluate callers own their input-byte budget; HTTP/CLI ingestion have separate limits. The web evaluator has no authenticated multi-tenant storage. External runner resource budgets and mandatory policy attachment remain platform/operator responsibilities. No certification, general cloud posture guarantee or production throughput claim is made.
 
 ## Attack Surface, Mitigations, and Attacker Stories
 
-These are threat scenarios and review obligations, not reported vulnerabilities. Priority describes plausible impact if the named control fails in its stated deployment. The source table above identifies the actual consumers and controls.
+These scenarios are review hypotheses, not validated findings.
 
-| Priority | Scenario and potential capability gain | Existing source-established controls | Additional mitigation or prerequisite |
-| --- | --- | --- | --- |
-| High | A plan author supplies unknown or malformed security attributes to obtain an allow. | Schema/action checks and SG004/SG007/SG008 reject or deny; unassessed changed managed types deny. | Enforce the exact approved plan artifact in the consuming pipeline. |
-| High | A malformed Spacelift envelope is mistaken for an empty clean plan. | Adapter explicitly denies invalid, incomplete, duplicated and inconsistent changes; negative adapter tests run real OPA. | Validate stack attachment and real policy input before deployment. |
-| Medium | A remote client consumes local evaluation resources or accesses plan data. | Loopback default, host/origin controls, size and subprocess bounds; no authenticated remote service. | Keep loopback exposure and private input files. |
-| Low | Markup in an address alters a rendered review. | Review Markdown neutralizes markup and mentions; browser uses textContent. | Retain output encoding in new renderers. |
+| Priority | Scenario and capability gain | Prerequisites | Impact | Existing controls | Mitigation | Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| High | Incomplete or malformed plan is accepted as clean | A consuming deployment gate trusts the result | Unsafe deployment within covered scope | Format/completeness/action/address checks and fail-closed OPA output | Preserve negative tests and mandatory gate consumption | `src/engine.ts:51`, `src/engine.ts:146` |
+| High | Hosted adapter is deployed without its core rules | Operator attaches source fragments independently | Missing external enforcement | One generated self-contained bundle, bundle-only tests, native hosted denial | Attach exactly the reviewed bundle and verify each intended stack | `scripts/build-spacelift.ts:3`, `integrations/spacelift/policy.rego:176` |
+| High | Approved JSON is swapped before applying another binary plan | External pipeline permits artifact substitution | Deployment outside reviewed change | Exact parsed-plan and policy evidence; no false binary binding claim | Bind binary and JSON artifacts in the consuming apply workflow | `src/engine.ts:158`, `README.md:64` |
+| Medium | Plan strings inject markup or mentions into exported review | Reviewer or external publisher renders the export | Misleading review or unwanted mentions | Review neutralization, structured finding output | Preserve plain-data rendering and explicit publication authority | `src/engine.ts:170` |
+| Medium | Submitted plan consumes shared evaluator resources | Reachable listener or broad input | Availability degradation | Ingress and subprocess limits, bounded output, container limits | Apply deployment concurrency limits; avoid public demo exposure | `src/io.ts:10`, `src/engine.ts:135`, `compose.yaml:10` |
+| Medium | Real plan values enter public artifacts | Operator supplies sensitive plans to public export paths | Confidentiality loss | Synthetic CI inputs and build exclusions | Keep real plan artifacts private and separately authorize publication | `.github/workflows/verify.yml:29`, `.dockerignore:11` |
+| Low | Trusted executable override is described as verified distribution | Operator chooses another binary | Misleading provenance | Explicit trusted-override limitation; installer verifies only its pinned download | Authenticate overrides operationally and record their actual identity | `src/engine.ts:126`, `src/engine.ts:164` |
 
 ## Severity Calibration (Critical, High, Medium, Low)
 
-Critical would require a credible unauthenticated path to broad privileged external execution or equivalent cross-tenant compromise. This model does not establish such a path. A fictional sandbox state change is not critical cloud compromise.
-
-High includes a reachable authorization, approval or gate bypass that grants a materially new capability over another tenant or a deployment decision, with the required privileged consuming workflow present. An input author changing their own local file is a counterexample.
-
-Medium includes bounded local denial of service, decision-fidelity loss or evidence misbinding under realistic deployment prerequisites. Merely changing trusted policy as its administrator is a counterexample.
-
-Low includes limited presentation/integrity confusion without a new privileged operation. A string that is safely rendered as text is controlled behavior, not an injection finding. Confidence depends on source and executable evidence, independently of impact.
-
-One fresh-context independent read-only architecture review informed this model. Source changed during construction; the parent rechecked the controls and source anchors after the reported discrepancies were fixed. Verified negatives are recorded in tests and verification artifacts. External account behavior remains unverified wherever stated.
+Critical requires a demonstrated broad authority compromise or widespread deployment impact with concrete external prerequisites; malformed local demo JSON alone is insufficient. High applies to a reachable bypass of a mandatory deployment gate or approved-artifact binding in an actual consuming workflow. Medium covers bounded confidentiality, availability or review-integrity effects. Low covers constrained local defects and misleading metadata without new authority. A trusted policy administrator changing policy is already-authorized control. Hosted acceptance of two fixtures narrows uncertainty for those decisions and does not establish coverage of every resource type or deployment path.
 
 Repository: https://github.com/jayekwere/stackguard
-Version: 0dd8bf06d25c990875bce1d46eccaebbd8a97b5c
+Version: bf29a9ed7345c9c930531abb2b9af7a037962f50
