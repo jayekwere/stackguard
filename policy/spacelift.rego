@@ -24,7 +24,7 @@ deny contains "SG000: Invalid resource change" if { some r in input.terraform.re
 deny contains "SG000: Planned values are missing" if { some r in input.terraform.resource_changes; some a in r.change.actions; a in {"create","update"}; r.change.after == null }
 deny contains "SG000: Previous values are missing" if { some r in input.terraform.resource_changes; some action in r.change.actions; action in {"delete","forget"}; r.change.before == null }
 
-# Evaluate alongside stackguard.rego. The adapter accepts the documented plan envelope.
+# Source adapter for local evaluation. Build the standalone hosted bundle before attaching.
 normalized := {"schema_version":"1.0","changes":[{
   "address":r.address,"type":r.type,"mode":r.mode,"actions":r.change.actions,
   "before":r.change.before,"after":r.change.after,"unknown":object.get(r.change,"after_unknown",{}),

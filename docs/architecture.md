@@ -22,11 +22,11 @@ flowchart LR
 | --- | --- | --- | --- |
 | CLI/web policy process | OPA override or .tools/opa; fixed policy/stackguard.rego copied into a private OS temporary directory | Trusted operator and OPA; normalized plan travels on stdin | No shell, 10-second timeout, 2 MiB output bound; policy snapshot removed after use |
 | Web listener | HOST or 127.0.0.1; PORT or 8080 | Reachable clients, no accounts | Host allowlist, same-origin POST, JSON content type and 1 MiB streaming limit |
-| Spacelift gate | Both policy packages attached by an operator; input.terraform envelope | External policy runner | Local adapter tests exist; real stack attachment remains unverified |
+| Spacelift gate | Single generated self-contained policy attached by an operator; input.terraform envelope | External policy runner | Local adapter tests exist; real stack attachment remains unverified |
 
 ## Trust and decisions
 
-Untrusted JSON passes known-field and semantic validation before a fixed OPA query. Imported Terraform metadata is retained but does not select executables or policy paths. The environment-controlled executable and repository policy are trusted operator configuration. A client cannot choose them through HTTP. The Spacelift adapter has its own input rejection rules and invokes the same policy package.
+Untrusted JSON passes known-field and semantic validation before a fixed OPA query. Imported Terraform metadata is retained but does not select executables or policy paths. The environment-controlled executable and repository policy are trusted operator configuration. A client cannot choose them through HTTP. The Spacelift adapter has its own input rejection rules and bundles the same core rules into one policy module.
 
 Core domain decisions are separated from HTTP, CLI and external integration adapters. Runtime models reject unsupported contracts instead of interpreting arbitrary instructions. The UI renders supplied strings with textContent. Container startup uses UID 10001 and loopback publication through Compose. Setup downloads dependencies and optional tools once; core synthetic evaluation does not require a network.
 

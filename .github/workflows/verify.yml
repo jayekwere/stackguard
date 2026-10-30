@@ -25,6 +25,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: node scripts/install-opa.mjs && .tools/opa check policy
       - run: npm run verify
+      - run: .tools/opa check integrations/spacelift/policy.rego && git diff --exit-code -- integrations/spacelift/policy.rego
       - run: mkdir -p artifacts && node dist/src/main.js demo > artifacts/output.json && cmp samples/output.json artifacts/output.json
       
       - run: npm audit --audit-level=high
