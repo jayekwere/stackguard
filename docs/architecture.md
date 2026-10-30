@@ -11,8 +11,8 @@ flowchart LR
 | Component/source | Responsibility |
 | --- | --- |
 | `src/main.ts:5` | CLI check/demo/serve, exit 0/1/2 |
-| `src/engine.ts:42` | Terraform evidence normalization and action/value validation |
-| `src/engine.ts:113` | Bounded OPA invocation using exact policy bytes |
+| `src/engine.ts:51` | Terraform evidence normalization and action/value validation |
+| `src/engine.ts:126` | Bounded OPA invocation using exact policy bytes |
 | `policy/spacelift.rego:4` | Separate fail-closed Spacelift envelope adapter |
 | `src/io.ts:21` | Loopback HTTP workbench and fixed static asset mapping |
 
