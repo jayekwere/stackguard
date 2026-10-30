@@ -1,6 +1,6 @@
 {
   "date": "2026-10-30",
-  "typescript_tests": 12,
+  "typescript_tests": 14,
   "python_tests": 0,
   "browser_tests": 1,
   "local_browser": "passed",
@@ -11,6 +11,6 @@
     "capabilities": "dropped"
   },
   "scope_note": "Node source coverage includes imported production files and excludes test files. Browser coverage is separate. Python percentage combines statements and branches.",
-  "node_imported_source_line_coverage_percent": 77.87,
-  "node_imported_source_branch_coverage_percent": 90.16
+  "node_imported_source_line_coverage_percent": 80.97,
+  "node_imported_source_branch_coverage_percent": 90.48
 }

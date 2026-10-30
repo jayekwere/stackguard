@@ -22,7 +22,7 @@ valid_change(r) if {
 deny contains "SG000: Invalid or incomplete Spacelift plan envelope" if { not valid_envelope }
 deny contains "SG000: Invalid resource change" if { some r in input.terraform.resource_changes; not valid_change(r) }
 deny contains "SG000: Planned values are missing" if { some r in input.terraform.resource_changes; some a in r.change.actions; a in {"create","update"}; r.change.after == null }
-deny contains "SG000: Previous values are missing" if { some r in input.terraform.resource_changes; "delete" in r.change.actions; r.change.before == null }
+deny contains "SG000: Previous values are missing" if { some r in input.terraform.resource_changes; some action in r.change.actions; action in {"delete","forget"}; r.change.before == null }
 
 # Evaluate alongside stackguard.rego. The adapter accepts the documented plan envelope.
 normalized := {"schema_version":"1.0","changes":[{

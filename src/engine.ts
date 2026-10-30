@@ -36,7 +36,16 @@ const terraform = z
   })
   .passthrough();
 export const findingSchema = z
-  .object({ rule: z.string(), address: z.string(), path: z.string(), message: z.string() })
+  .object({
+    rule: z.string(),
+    address: z.string(),
+    path: z.string(),
+    message: z.string(),
+    actions: z
+      .array(z.enum(["no-op", "create", "read", "update", "delete", "forget"]))
+      .min(1)
+      .max(2),
+  })
   .strict();
 export type Finding = z.infer<typeof findingSchema>;
 export function normalize(input: unknown) {
@@ -52,9 +61,13 @@ export function normalize(input: unknown) {
       const actions = r.change.actions;
       if ((actions.includes("create") || actions.includes("update")) && r.change.after === null)
         throw new Error("Missing planned values");
-      if (actions.includes("delete") && r.change.before === null)
+      if ((actions.includes("delete") || actions.includes("forget")) && r.change.before === null)
         throw new Error("Missing previous values");
-      if (actions.length === 1 && actions[0] === "delete" && r.change.after !== null)
+      if (
+        actions.length === 1 &&
+        (actions[0] === "delete" || actions[0] === "forget") &&
+        r.change.after !== null
+      )
         throw new Error("Deletion has planned values");
       if (r.type === "aws_security_group" && r.change.after !== null) {
         const cidr = (family: number) =>
@@ -163,7 +176,7 @@ export function reviewMarkdown(report: Awaited<ReturnType<typeof evaluate>>): st
     "",
     ...report.findings.map(
       (f) =>
-        `- **${clean(f.rule)}** ${clean(f.address)} at \`${clean(f.path)}\`: ${clean(f.message)}`,
+        `- **${clean(f.rule)}** ${clean(f.address)} [${f.actions.join(", ")}] at \`${clean(f.path)}\`: ${clean(f.message)}`,
     ),
   ].join("\n");
 }

@@ -27,10 +27,10 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). For a container demo, run `
 
 ## What it enforces
 
-- SG001 rejects public IPv4 and IPv6 ingress. SG002 requires all S3 public access block controls. SG003 protects tagged resources from deletion or replacement.
-- SG004 blocks unknown security attributes, SG005 blocks unsupported active resource types, and SG006 rejects public ACLs. SG007 and SG008 reject malformed policy attributes.
+- SG001 rejects public IPv4 and IPv6 ingress. SG002 requires all S3 public access block controls. SG003 protects tagged resources from deletion, replacement or state removal.
+- SG004 recursively evaluates Terraform true/false unknown markers, ignores computed descriptions, and blocks unknown security attributes, SG005 blocks unsupported active resource types, and SG006 rejects public ACLs. SG007 and SG008 reject malformed policy attributes.
 - `check` returns 0 for allow, 1 for deny, and 2 for invalid evidence or policy execution failure. No undefined OPA result becomes an allow.
-- Review evidence contains resource addresses, JSON change pointers, planned-input and policy digests. Policy bytes are copied to a private temporary file before evaluation to bind the decision to the recorded policy.
+- Review evidence contains resource addresses, planned actions, exact JSON field pointers, planned-input and policy digests. Policy bytes are copied to a private temporary file before evaluation to bind the decision to the recorded policy.
 
 ## Inputs, integrations and evidence
 

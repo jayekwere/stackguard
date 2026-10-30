@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "decision": "deny",
   "plan_sha256": "8f0e2752fd91dde0de8d1f7a38715495a9ac6fbe31ce99e42da379d9f46e594c",
-  "policy_sha256": "219022506a35adb33b575da1117b896ee84399c1f79f1250354208bbd1f0a4e2",
+  "policy_sha256": "6f1898c5c69d301d3e795026f67af79fd7ddc1a82d203125accaa34cd26515aa",
   "engine": "OPA / Rego v1",
   "pinned_distribution": "1.22.0",
   "assessed_changes": 1,
@@ -10,14 +10,11 @@
     {
       "rule": "SG001",
       "address": "aws_security_group.demo",
-      "path": "/resource_changes/0/change/after/ingress",
-      "message": "Public ingress requires review"
-    },
-    {
-      "rule": "SG004",
-      "address": "aws_security_group.demo",
-      "path": "/resource_changes/0/change/after_unknown",
-      "message": "Security relevant attributes are unknown"
+      "path": "/resource_changes/0/change/after/ingress/0/cidr_blocks/0",
+      "message": "Public ingress requires review",
+      "actions": [
+        "create"
+      ]
     }
   ]
 }

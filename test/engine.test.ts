@@ -25,8 +25,39 @@ test("real Terraform-shaped unsafe sample is blocked with stable evidence", asyn
   const result = await evaluate(await load("samples/unsafe-plan.json"));
   assert.equal(result.decision, "deny");
   assert.ok(result.findings.some((f) => f.rule === "SG001"));
+  assert.equal(result.findings.length, 1);
+  assert.equal(
+    result.findings[0]?.path,
+    "/resource_changes/0/change/after/ingress/0/cidr_blocks/0",
+  );
+  assert.deepEqual(result.findings[0]?.actions, ["create"]);
   assert.match(result.plan_sha256, /^[a-f0-9]{64}$/);
   assert.match(reviewMarkdown(result), /resource_changes/);
+});
+
+test("computed descriptions remain non-security metadata while nested security unknowns deny", async () => {
+  const after = { ingress: [{ cidr_blocks: ["10.0.0.0/8"] }] };
+  assert.equal(
+    (
+      await evaluate(
+        plan("aws_security_group", after, ["create"], null, { ingress: [{ description: true }] }),
+      )
+    ).decision,
+    "allow",
+  );
+  for (const key of [
+    "cidr_blocks",
+    "ipv6_cidr_blocks",
+    "from_port",
+    "protocol",
+    "security_groups",
+  ]) {
+    const result = await evaluate(
+      plan("aws_security_group", after, ["create"], null, { ingress: [{ [key]: true }] }),
+    );
+    assert.equal(result.decision, "deny");
+    assert.ok(result.findings.some((f) => f.path.endsWith(`/after_unknown/ingress/0/${key}`)));
+  }
 });
 test("private ingress permits and unknown ingress blocks", async () => {
   assert.equal(
@@ -46,6 +77,14 @@ test("IPv6 public ingress and public ACLs denied", async () => {
   assert.equal(
     (await evaluate(plan("aws_security_group", { ingress: [{ ipv6_cidr_blocks: ["::/0"] }] })))
       .decision,
+    "deny",
+  );
+  assert.equal(
+    (
+      await evaluate(
+        plan("aws_security_group", { ingress: [{ ipv6_cidr_blocks: ["0:0:0:0:0:0:0:0/0"] }] }),
+      )
+    ).decision,
     "deny",
   );
   for (const acl of ["public-read", "public-read-write", "authenticated-read"])
@@ -80,6 +119,17 @@ test("protected replacement blocks and ordinary deletion permits", async () => {
     (await evaluate(plan("aws_security_group", null, ["delete"], { tags: {} }))).decision,
     "allow",
   );
+});
+test("protected state removal requires review and missing previous values reject", async () => {
+  assert.equal(
+    (
+      await evaluate(
+        plan("aws_security_group", null, ["forget"], { tags: { stackguard_protected: "true" } }),
+      )
+    ).decision,
+    "deny",
+  );
+  assert.throws(() => normalize(plan("aws_security_group", null, ["forget"], null)));
 });
 test("unassessed resources fail closed, unchanged and data resources do not", async () => {
   assert.equal((await evaluate(plan("aws_unknown", {}))).decision, "deny");
