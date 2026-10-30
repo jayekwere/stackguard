@@ -23,3 +23,9 @@ playwright-report/
 .private/
 private-evidence/
 *.snapshot.json
+
+*.pem
+
+*.key
+
+.env.*

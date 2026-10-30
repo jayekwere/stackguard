@@ -1,0 +1,40 @@
+{
+  "verified_at": "2026-10-30",
+  "source_commit": "6959296517b726c641a64aaa86570ea7cfba2461",
+  "bundle_sha256": "f04896ef20bbdc36ca241cd6bb0aab01c067e6868b9a9070d3b172eeb241c548",
+  "policy": "stackguard-verification",
+  "stack": "stackguard-plan-verification",
+  "runtime": {
+    "vendor": "Terraform",
+    "workflow_tool": "OpenTofu",
+    "version": "1.13.2",
+    "provider": "hashicorp/aws",
+    "provider_version": "6.20.0"
+  },
+  "unsafe": {
+    "run_id": "01M670E5MH8R4TZ6ZA2JPEJ0G4",
+    "cidr": "0.0.0.0/0",
+    "result": "FAILED",
+    "reason": "denied by plan policy",
+    "message": "SG001: Public ingress requires review (aws_security_group.verification)",
+    "url": "https://jayekwere.app.us.spacelift.io/stack/stackguard-plan-verification/run/01M670E5MH8R4TZ6ZA2JPEJ0G4"
+  },
+  "safe": {
+    "run_id": "01M670PP5DW8JAYK3F51TMK3V0",
+    "cidr": "10.0.0.0/8",
+    "policy_result": "Plan checks are GO",
+    "observed_state": "UNCONFIRMED",
+    "url": "https://jayekwere.app.us.spacelift.io/stack/stackguard-plan-verification/run/01M670PP5DW8JAYK3F51TMK3V0",
+    "final_state": "DISCARDED",
+    "apply_called": false
+  },
+  "safety": {
+    "autodeploy": false,
+    "run_promotion": false,
+    "cloud_integrations": 0,
+    "dummy_provider_credentials": true,
+    "apply_called": false,
+    "real_cloud_resources_created": 0
+  },
+  "verification_method": "Native authenticated Spacelift UI run history and policy messages; native Spacelift GitHub check also observed"
+}

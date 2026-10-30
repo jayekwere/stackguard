@@ -22,7 +22,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | CLI/web policy process | OPA override or .tools/opa; fixed policy/stackguard.rego copied into a private OS temporary directory | Trusted operator and OPA; normalized plan travels on stdin | No shell, 10-second timeout, 2 MiB output bound; policy snapshot removed after use |
 | Web listener | HOST or 127.0.0.1; PORT or 8080 | Reachable clients, no accounts | Host allowlist, same-origin POST, JSON content type and 1 MiB streaming limit |
-| Spacelift gate | Single generated self-contained policy attached by an operator; input.terraform envelope | External policy runner | Local adapter tests exist; real stack attachment remains unverified |
+| Spacelift gate | Single generated self-contained policy attached by an operator; input.terraform envelope | External policy runner | Standalone bundle locally tested and attached to a dedicated hosted stack; native deny and safe acceptance are recorded in docs/spacelift-verification.json |
 
 ## Trust and decisions
 
@@ -32,6 +32,6 @@ Core domain decisions are separated from HTTP, CLI and external integration adap
 
 ## Unresolved integration scope
 
-No apply pipeline, branch protection, live AWS account, or real Spacelift stack has been verified. Policy scope is deliberately narrow. Combined narrower public CIDRs, runtime drift and full provider semantics are outside the current rule set.
+A dedicated hosted Spacelift plan gate has been verified for denial and safe acceptance with dummy provider credentials. No apply pipeline, branch protection or real AWS resource deployment has been verified. Policy scope is deliberately narrow. Combined narrower public CIDRs, runtime drift and full provider semantics are outside the current rule set.
 
 See the README for exact setup, sample outputs, decision semantics and limits. The threat model distinguishes hypotheses from source-established controls.
