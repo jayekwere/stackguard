@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "decision": "deny",
   "plan_sha256": "8f0e2752fd91dde0de8d1f7a38715495a9ac6fbe31ce99e42da379d9f46e594c",
-  "policy_sha256": "6f1898c5c69d301d3e795026f67af79fd7ddc1a82d203125accaa34cd26515aa",
+  "policy_sha256": "311690e2d0f4333e1e01f9d6c57d2f3a5968b68f7eb1372954c00f78bfdd5bb7",
   "engine": "OPA / Rego v1",
   "pinned_distribution": "1.22.0",
   "assessed_changes": 1,

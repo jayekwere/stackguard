@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-31",
+  "audited_revision": "a838e1b2abb3792dbe87cea218019ec2947a9fee",
+  "scope": "All 50 tracked paths at baseline; independent baseline and focused reviews plus real OPA and raw HTTP validation.",
+  "findings": [
+    {
+      "id": "public-block-deletion",
+      "severity": "medium",
+      "status": "fixed"
+    },
+    {
+      "id": "inherited-protection-tag",
+      "severity": "medium",
+      "status": "fixed"
+    },
+    {
+      "id": "malformed-http-target",
+      "severity": "low",
+      "status": "fixed"
+    }
+  ],
+  "verification": {
+    "typescript_tests": 19,
+    "browser_tests": 1,
+    "typescript_imported_source_line_coverage_percent": 81.44,
+    "lint_and_typechecking": "passed",
+    "real_opa_core_and_standalone_bundle": "passed",
+    "restricted_container_readiness_and_native_opa_demo": "passed",
+    "offline_demo": "Working; original plan digest and one SG001 finding preserved. Policy digest regenerated from changed policy bytes.",
+    "spacelift_native_simulation": "Exact saved policy readback; SG001/SG002/SG003 deny and safe control passed. See spacelift-hardening-verification.json."
+  },
+  "semantics": {
+    "public_block_plain_delete": "deny SG002",
+    "state_only_forget": "Does not remove remote block; existing final-state contract preserved unless protection applies.",
+    "replacement": "Known final controls remain required; both replacement orders retain their existing final-state scope.",
+    "protection": "String true in either prior tags or tags_all; one exact stable evidence pointer.",
+    "hosted_validation": "Standalone delete/forget with non-null after is rejected."
+  },
+  "limitations": [
+    "No cloud resources are applied by this project.",
+    "Exact approved binary-plan binding and mandatory apply gating remain deployment responsibilities.",
+    "The policy remains narrow; runtime drift and combined narrower public CIDRs remain outside its rules."
+  ],
+  "contract_sources": [
+    "https://developer.hashicorp.com/terraform/tutorials/aws/aws-default-tags"
+  ],
+  "hosted_ci": "https://github.com/jayekwere/stackguard/actions/workflows/verify.yml"
+}

@@ -29,12 +29,25 @@ deny contains item(c,"SG002",sprintf("/after/%s",[key]),"All S3 public access bl
   some key in ["block_public_acls","block_public_policy","ignore_public_acls","restrict_public_buckets"]
   object.get(c.after,key,false) != true
 }
-deny contains item(c,"SG003","/before/tags/stackguard_protected","Deleting or forgetting a protected resource requires a separately reviewed change") if {
+deny contains item(c,"SG002","/actions","Deleting an S3 public access block requires a separately reviewed teardown") if {
+  some c in input.changes
+  active(c)
+  c.type == "aws_s3_bucket_public_access_block"
+  c.actions == ["delete"]
+}
+protected_tag(c, key) if {
+  tags := object.get(c.before,key,{})
+  is_object(tags)
+  object.get(tags,"stackguard_protected","false") == "true"
+}
+protection_key(c) := "tags" if { protected_tag(c,"tags") }
+protection_key(c) := "tags_all" if { not protected_tag(c,"tags"); protected_tag(c,"tags_all") }
+deny contains item(c,"SG003",sprintf("/before/%s/stackguard_protected",[key]),"Deleting or forgetting a protected resource requires a separately reviewed change") if {
   some c in input.changes
   active(c)
   some action in c.actions
   action in {"delete","forget"}
-  object.get(object.get(c.before,"tags",{}),"stackguard_protected","false") == "true"
+  key := protection_key(c)
 }
 is_unknown(value) if { walk(value, [_, leaf]); leaf == true }
 is_unknown(value) if {

@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-10-31T23:57:02.895Z",
+  "scope": "Spacelift native policy simulation on the saved existing StackGuard verification policy. Inputs are synthetic JSON, not applied infrastructure.",
+  "policy_url": "https://jayekwere.app.us.spacelift.io/policy/stackguard-verification",
+  "policy_sha256": "7f40a4f548bd0fff6757447ac227115f0be78b6b35abf9aff2228482f3568ef3",
+  "editor_readback_exact": true,
+  "cases": [
+    {
+      "name": "destructive-and-public-changes",
+      "input": {
+        "terraform": {
+          "resource_changes": [
+            {
+              "address": "aws_s3_bucket_public_access_block.synthetic",
+              "mode": "managed",
+              "type": "aws_s3_bucket_public_access_block",
+              "change": {
+                "actions": [
+                  "delete"
+                ],
+                "before": {
+                  "block_public_acls": true,
+                  "block_public_policy": true,
+                  "ignore_public_acls": true,
+                  "restrict_public_buckets": true
+                },
+                "after": null,
+                "after_unknown": {}
+              }
+            },
+            {
+              "address": "aws_security_group.protected",
+              "mode": "managed",
+              "type": "aws_security_group",
+              "change": {
+                "actions": [
+                  "delete"
+                ],
+                "before": {
+                  "tags": {},
+                  "tags_all": {
+                    "stackguard_protected": "true"
+                  }
+                },
+                "after": null,
+                "after_unknown": {}
+              }
+            },
+            {
+              "address": "aws_security_group.public",
+              "mode": "managed",
+              "type": "aws_security_group",
+              "change": {
+                "actions": [
+                  "create"
+                ],
+                "before": null,
+                "after": {
+                  "ingress": [
+                    {
+                      "cidr_blocks": [
+                        "0.0.0.0/0"
+                      ]
+                    }
+                  ]
+                },
+                "after_unknown": {}
+              }
+            }
+          ]
+        }
+      },
+      "result": {
+        "deny": [
+          "SG001: Public ingress requires review (aws_security_group.public)",
+          "SG002: Deleting an S3 public access block requires a separately reviewed teardown (aws_s3_bucket_public_access_block.synthetic)",
+          "SG003: Deleting or forgetting a protected resource requires a separately reviewed change (aws_security_group.protected)"
+        ],
+        "flag": [],
+        "reset_flag": [],
+        "sample": false,
+        "warn": []
+      }
+    },
+    {
+      "name": "private-ingress-control",
+      "input": {
+        "terraform": {
+          "resource_changes": [
+            {
+              "address": "aws_security_group.private",
+              "mode": "managed",
+              "type": "aws_security_group",
+              "change": {
+                "actions": [
+                  "create"
+                ],
+                "before": null,
+                "after": {
+                  "ingress": [
+                    {
+                      "cidr_blocks": [
+                        "10.0.0.0/8"
+                      ]
+                    }
+                  ]
+                },
+                "after_unknown": {}
+              }
+            }
+          ]
+        }
+      },
+      "result": {
+        "deny": [],
+        "flag": [],
+        "reset_flag": [],
+        "sample": false,
+        "warn": []
+      }
+    }
+  ],
+  "limitations": [
+    "Simulation proves native policy-engine decisions for supplied inputs. Historical real Terraform/OpenTofu run acceptance is separately recorded.",
+    "No cloud resources or Terraform state were changed."
+  ]
+}

@@ -35,3 +35,5 @@ Core domain decisions are separated from HTTP, CLI and external integration adap
 A dedicated hosted Spacelift plan gate has been verified for denial and safe acceptance with dummy provider credentials. No apply pipeline, branch protection or real AWS resource deployment has been verified. Policy scope is deliberately narrow. Combined narrower public CIDRs, runtime drift and full provider semantics are outside the current rule set.
 
 See the README for exact setup, sample outputs, decision semantics and limits. The threat model distinguishes hypotheses from source-established controls.
+
+SG002 denies a plain remote deletion of an S3 public-access-block resource; state-only forget and known safe replacement final states retain their existing semantics. SG003 reads string true from either prior tags or tags_all and points to the field proving protection. Known direct tags take precedence for one stable evidence finding. Hosted validation also rejects non-null planned values for standalone delete/forget.

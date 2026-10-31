@@ -23,6 +23,7 @@ deny contains "SG000: Invalid or incomplete Spacelift plan envelope" if { not va
 deny contains "SG000: Invalid resource change" if { some r in input.terraform.resource_changes; not valid_change(r) }
 deny contains "SG000: Planned values are missing" if { some r in input.terraform.resource_changes; some a in r.change.actions; a in {"create","update"}; r.change.after == null }
 deny contains "SG000: Previous values are missing" if { some r in input.terraform.resource_changes; some action in r.change.actions; action in {"delete","forget"}; r.change.before == null }
+deny contains "SG000: State removal has planned values" if { some r in input.terraform.resource_changes; r.change.actions in [["delete"],["forget"]]; r.change.after != null }
 
 # Source adapter for local evaluation. Build the standalone hosted bundle before attaching.
 normalized := {"schema_version":"1.0","changes":[{

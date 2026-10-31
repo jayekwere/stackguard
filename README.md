@@ -27,7 +27,7 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). For a container demo, run `
 
 ## What it enforces
 
-- SG001 rejects public IPv4 and IPv6 ingress. SG002 requires all S3 public access block controls. SG003 protects tagged resources from deletion, replacement or state removal.
+- SG001 rejects public IPv4 and IPv6 ingress. SG002 requires all S3 public access block controls and denies plain remote deletion of their block resource. SG003 protects resources tagged directly or through effective provider default tags from deletion, replacement or state removal.
 - SG004 recursively evaluates Terraform true/false unknown markers, ignores computed descriptions, and blocks unknown security attributes, SG005 blocks unsupported active resource types, and SG006 rejects public ACLs. SG007 and SG008 reject malformed policy attributes.
 - `check` returns 0 for allow, 1 for deny, and 2 for invalid evidence or policy execution failure. No undefined OPA result becomes an allow.
 - Review evidence contains resource addresses, planned actions, exact JSON field pointers, planned-input and policy digests. Policy bytes are copied to a private temporary file before evaluation to bind the decision to the recorded policy.
@@ -68,3 +68,7 @@ OPA binaries come from a pinned release and verified SHA-256 values. `OPA` is a 
  
 
 See [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md). MIT covers this repository's original code; dependencies retain their respective licenses.
+
+The [security audit record](docs/security-audit.json) covers public-access-block deletion, inherited protection tags and HTTP parsing. Safe replacements remain subject to their planned final controls; state-only forget does not remove the remote block. Protection markers in either prior tags or tags_all still block destructive changes. The regenerated offline sample retains its plan digest and SG001 finding; its policy digest changes with the evaluated rules.
+
+The updated standalone policy was saved in the dedicated Spacelift verification account and exercised by its native simulation engine. [Hosted hardening evidence](docs/spacelift-hardening-verification.json) records exact policy readback, SG001/SG002/SG003 denials and a safe private-ingress control. These synthetic simulation cases are separate from the historical real plan runs.
