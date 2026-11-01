@@ -28,7 +28,8 @@
     "real_opa_core_and_standalone_bundle": "passed",
     "restricted_container_readiness_and_native_opa_demo": "passed",
     "offline_demo": "Working; original plan digest and one SG001 finding preserved. Policy digest regenerated from changed policy bytes.",
-    "spacelift_native_simulation": "Exact saved policy readback; SG001/SG002/SG003 deny and safe control passed. See spacelift-hardening-verification.json."
+    "spacelift_native_simulation": "Exact saved policy readback; SG001/SG002/SG003 deny and safe control passed. See spacelift-hardening-verification.json.",
+    "spacelift_real_plan_runs": "At 8355a25, public ingress denied with SG001. Private ingress passed one plan policy, reached UNCONFIRMED with Autodeploy off, then was discarded without applying. Dedicated stack used dummy credentials."
   },
   "semantics": {
     "public_block_plain_delete": "deny SG002",

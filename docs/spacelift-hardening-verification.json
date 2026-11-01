@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "verified_at": "2026-10-31T23:57:02.895Z",
-  "scope": "Spacelift native policy simulation on the saved existing StackGuard verification policy. Inputs are synthetic JSON, not applied infrastructure.",
+  "scope": "Saved Spacelift native policy simulations plus separately listed actual OpenTofu plan runs on the dedicated verification stack. No infrastructure applied.",
   "policy_url": "https://jayekwere.app.us.spacelift.io/policy/stackguard-verification",
   "policy_sha256": "7f40a4f548bd0fff6757447ac227115f0be78b6b35abf9aff2228482f3568ef3",
   "editor_readback_exact": true,
@@ -122,7 +122,44 @@
     }
   ],
   "limitations": [
-    "Simulation proves native policy-engine decisions for supplied inputs. Historical real Terraform/OpenTofu run acceptance is separately recorded.",
-    "No cloud resources or Terraform state were changed."
+    "Synthetic simulations establish supplied-input policy decisions; actual plan runs establish native acceptance at their recorded source revision.",
+    "Both real plans used dummy provider credentials and fictional identifiers. No cloud resources or Terraform state were changed.",
+    "No external apply pipeline, binary-plan binding or broader provider authorization is verified."
+  ],
+  "real_plan_runs": [
+    {
+      "id": "01M6A6F9T1G5RA9DWP2WJXAMCD",
+      "url": "https://jayekwere.app.us.spacelift.io/stack/stackguard-plan-verification/run/01M6A6F9T1G5RA9DWP2WJXAMCD",
+      "source_commit": "8355a256bb39a2e651d926e51557e721928c0a28",
+      "observed_at": "2026-11-01T00:00:54.621Z",
+      "vendor": "Terraform",
+      "engine": "OpenTofu 1.13.2",
+      "provider": "hashicorp/aws 6.20.0",
+      "decision": "deny",
+      "rules": [
+        "SG001"
+      ],
+      "applied": false,
+      "scope": "Actual plan with fictional identifiers and dummy provider credentials; rejected by the saved hardened policy.",
+      "terminal_state": "FAILED: denied by plan policy"
+    },
+    {
+      "id": "01M6A6QSFGRSJAQ0ZRGMNDWHZG",
+      "url": "https://jayekwere.app.us.spacelift.io/stack/stackguard-plan-verification/run/01M6A6QSFGRSJAQ0ZRGMNDWHZG",
+      "source_commit": "8355a256bb39a2e651d926e51557e721928c0a28",
+      "observed_at": "2026-11-01T00:06:36.017Z",
+      "vendor": "Terraform",
+      "engine": "OpenTofu 1.13.2",
+      "provider": "hashicorp/aws 6.20.0",
+      "decision": "allow",
+      "policy_evidence": "Evaluated 1 plan policy; Plan checks are GO",
+      "terminal_state": "DISCARDED",
+      "applied": false,
+      "runtime_overrides": {
+        "SPACELIFT_SKIP_APPLYING": "true",
+        "TF_VAR_public_ingress": "false"
+      },
+      "scope": "Actual private-CIDR plan reached UNCONFIRMED with Autodeploy off, then was discarded without confirmation."
+    }
   ]
 }
