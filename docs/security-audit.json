@@ -46,5 +46,6 @@
   "contract_sources": [
     "https://developer.hashicorp.com/terraform/tutorials/aws/aws-default-tags"
   ],
-  "hosted_ci": "https://github.com/jayekwere/stackguard/actions/workflows/verify.yml"
+  "hosted_ci": "https://github.com/jayekwere/stackguard/actions/workflows/verify.yml",
+  "hosted_ci_dependency_hardening": "Browser setup uses the official HTTPS Ubuntu archive mirror, bounded APT network timeouts and a five-minute step limit. This addresses a runner mirror timeout observed during this five-project audit; package signature verification remains enabled."
 }
