@@ -74,3 +74,7 @@ The [security audit record](docs/security-audit.json) covers public-access-block
 The updated standalone policy was saved in the dedicated Spacelift verification account and exercised by its native simulation engine. [Hosted hardening evidence](docs/spacelift-hardening-verification.json) records exact policy readback, SG001/SG002/SG003 denials and a safe private-ingress control. These synthetic simulation cases are separate from the historical real plan runs.
 
 Fresh real hosted OpenTofu plans at source revision 8355a25 also exercised the updated policy: public ingress was denied, and private ingress passed the gate and was discarded at the approval boundary. The same [hosted hardening record](docs/spacelift-hardening-verification.json) lists both run URLs and the no-apply outcome.
+
+---
+
+**AI assistance:** AI tools helped with code or documentation.
